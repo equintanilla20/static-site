@@ -36,8 +36,8 @@ class TestTextNode(unittest.TestCase):
     
     
     def test_repr_01(self):
-        node = TextNode('This is a text node', TextType.NORMAL)
-        node2 = 'TextNode(This is a text node, TextType.NORMAL, None)'
+        node = TextNode('This is a text node', TextType.TEXT)
+        node2 = 'TextNode(This is a text node, TextType.TEXT, None)'
         self.assertEqual(str(node), node2)
     
     
@@ -45,7 +45,27 @@ class TestTextNode(unittest.TestCase):
         node = TextNode('This is a text node', TextType.ITALIC, 'https://boot.dev')
         node2 = 'TextNode(This is another text node, TextType.ITALIC, https://boot.dev)'
         self.assertNotEqual(str(node), node2)
-        
+    
+    
+    def test_text_node_to_html_node_01(self):
+        node = TextNode('This is a text node', TextType.BOLD)
+        html_node = node.text_node_to_html_node()
+        self.assertEqual(str(html_node), 'LeafNode(b, This is a text node, None)')
+    
+    
+    def test_text_node_to_html_node_02(self):
+        node = TextNode('This is a text node', TextType.ITALIC)
+        html_node = node.text_node_to_html_node()
+        self.assertEqual(str(html_node), 'LeafNode(i, This is a text node, None)')
+
+
+    def test_text_node_to_html_node_03(self):
+        node1 = TextNode('This is a text node', TextType.CODE)
+        html_node1 = node1.text_node_to_html_node()
+        node2 = TextNode('This is a text node', TextType.LINK, 'https://boot.dev')
+        html_node2 = node2.text_node_to_html_node()
+        self.assertNotEqual(str(html_node1), str(html_node2))
+
 
 if __name__ == '__main__':
     unittest.main()
