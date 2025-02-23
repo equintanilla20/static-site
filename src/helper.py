@@ -1,7 +1,7 @@
 from enum import Enum
 import re
-from htmlnode import HTMLNode
 from leafnode import LeafNode
+from parentnode import ParentNode
 from textnode import TextNode, TextType
 
 
@@ -81,7 +81,6 @@ def split_nodes_link(old_nodes):
                 else:
                     link = extract_markdown_links(part)
                     new_nodes.append(TextNode(link[0][0], TextType.LINK, link[0][1]))
-
     return new_nodes
 
 
@@ -114,9 +113,9 @@ def block_to_block_type(block):
         return BlockType.HEADING
     elif block.startswith('```') and block.endswith('```'):
         return BlockType.CODE
-    elif block.startswith('>'):
+    elif block[0] == '>' and block[1] == ' ':
         return BlockType.QUOTE
-    elif block.startswith('*') or block.startswith('-'):
+    elif (block[0] == '*' and block[1] == ' ') or (block[0] == '-' and block[1] == ' '):
         return BlockType.UNORDERED_LIST
     elif block[0].isdigit() and block[1] == '.':
         return BlockType.ORDERED_LIST
@@ -136,53 +135,58 @@ def markdown_to_html_node(markdown):
                     count += 1
                 else:
                     break
-                
-            html_nodes.append(LeafNode(f'h{count}', block[2:]))
+            html_nodes.append(LeafNode(f'h{count}', block[(count + 1):]))
         elif block_type == BlockType.CODE:
-            html_nodes.append(LeafNode('code', block[3:-3]))
+            child = LeafNode('code', block[4:-3])
+            html_nodes.append(ParentNode('pre', [child]))
         elif block_type == BlockType.QUOTE:
-            html_nodes.append(LeafNode('blockquote', block[1:]))
+            quotes = block.split('\n')
+            if len(quotes) == 1:
+                html_nodes.append(LeafNode('blockquote', block[2:]))
+            else:
+                children_nodes = []
+                for quote in quotes:
+                    children_nodes.append(LeafNode('span', quote[2:] + '<br>'))
+                html_node = ParentNode('blockquote', children_nodes)
+                html_nodes.append(html_node)
         elif block_type == BlockType.UNORDERED_LIST:
             items = block.split('\n')
-            html_node = HTMLNode('ul')
+            children_nodes = []
             for item in items:
-                if html_node.children == None:
-                    html_node.children = [LeafNode('li', item[2:])]
+                textnodes = text_to_textnodes(item[2:])
+                if len(textnodes) == 1:
+                    children_nodes.append(LeafNode('li', item[2:]))
                 else:
-                    html_node.children.append(LeafNode('li', item[2:]))
+                    htmlnodes = [node.text_node_to_html_node() for node in textnodes]
+                    children_nodes.append(ParentNode('li', htmlnodes))
+            html_node = ParentNode('ul', children_nodes)
             html_nodes.append(html_node)
         elif block_type == BlockType.ORDERED_LIST:
             items = block.split('\n')
-            html_node = HTMLNode('ol')
+            children_nodes = []
             for item in items:
-                if html_node.children == None:
-                    html_node.children = [LeafNode('li', item[3:])]
+                textnodes = text_to_textnodes(item[2:])
+                if len(textnodes) == 1:
+                    children_nodes.append(LeafNode('li', item[3:]))
                 else:
-                    html_node.children.append(LeafNode('li', item[3:]))
+                    htmlnodes = [node.text_node_to_html_node() for node in textnodes]
+                    children_nodes.append(ParentNode('li', htmlnodes))
+            html_node = ParentNode('ol', children=children_nodes)
             html_nodes.append(html_node)
         else:
-            html_nodes.append(LeafNode('p', block))
-    parent_node = HTMLNode('div', children=html_nodes)
+            block_to_nodes = text_to_textnodes(block)
+
+            for node in block_to_nodes:
+                html_nodes.append(node.text_node_to_html_node())
+            
+    parent_node = ParentNode('div', children=html_nodes)
     return parent_node
 
 
 if __name__ == '__main__':
-
-    node = TextNode(
-        " and an ![obi wan image](https://i.imgur.com/fJRm4Vk.jpeg) and a [link](https://boot.dev)",
-        TextType.TEXT
-    )
-    node2 = TextNode(
-        " and an ![obi wan image](https://i.imgur.com/fJRm4Vk.jpeg) and a [link](https://boot.dev)",
-        TextType.TEXT
-    )
-    node3 = TextNode(
-        "This is **text** with an *italic* word and a `code block` and an ![obi wan image](https://i.imgur.com/fJRm4Vk.jpeg) and a [link](https://boot.dev)",
-        TextType.TEXT
-    )
-    new_nodes = split_nodes_link([node])
-    print(f'Links ::: {new_nodes}')
-    new_nodes = split_nodes_image([node2])
-    print(f'Images ::: {new_nodes}')
-    new_nodes = text_to_textnodes(node3.text)
-    print(f'All ::: {new_nodes}')
+    with open('content/majesty/index.md', 'r') as f:
+        markdown = f.read()
+    print('------------------------------------')
+    html_node = markdown_to_html_node(markdown)
+    print(f'HTML Node ::: {html_node.to_html()}')
+    print('------------------------------------')

@@ -69,7 +69,7 @@ class TestHelper(unittest.TestCase):
         markdown = "# This is a heading\n\nThis is a paragraph of text. It has some **bold** and *italic* words inside of it.\n\n* This is the first list item in a list block\n* This is a list item\n* This is another list item\n"
         html_node = markdown_to_html_node(markdown)
 
-        self.assertEqual(len(html_node.children), 3)
+        self.assertEqual(len(html_node.children), 7)
         self.assertEqual(html_node.children[0].tag, 'h1')
 
 

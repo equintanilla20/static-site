@@ -6,8 +6,8 @@ class TextType(Enum):
     BOLD = 'bold'
     ITALIC = 'italic'
     CODE = 'code'
-    LINK = 'links'
-    IMAGE = 'images'
+    LINK = 'link'
+    IMAGE = 'image'
     
 
 class TextNode:
@@ -20,7 +20,7 @@ class TextNode:
         
     def text_node_to_html_node(self):
         if self.text_type == TextType.TEXT:
-            return LeafNode(None, self.text)
+            return LeafNode('span', self.text)
         elif self.text_type == TextType.BOLD:
             return LeafNode('b', self.text)
         elif self.text_type == TextType.ITALIC:

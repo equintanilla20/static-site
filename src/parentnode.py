@@ -15,8 +15,9 @@ class ParentNode(HTMLNode):
         child_nodes = ''
         for child in self.children:
             child_nodes += child.to_html()
-        
-        return f'<{self.tag} {self.props_to_html()}>{child_nodes}</{self.tag}>'
+        if self.props:
+            return f'<{self.tag} {self.props_to_html()}>{child_nodes}</{self.tag}>'
+        return f'<{self.tag}>{child_nodes}</{self.tag}>'
     
     
     def __eq__(self, obj):

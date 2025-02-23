@@ -13,8 +13,9 @@ class HTMLNode:
     
     def props_to_html(self):
         result = ''
-        for key, value in self.props.items():
-            result += f'{key}="{value}" '
+        if self.props:
+            for key, value in self.props.items():
+                result += f'{key}="{value}" '
         return result.strip()
     
     
