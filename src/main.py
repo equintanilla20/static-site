@@ -29,8 +29,8 @@ def generate_page(basepath, from_path, template_path, dest_path):
         template = f.read()
     template = re.sub(r"\{\{\s*Title\s*\}\}", title, template)
     template = re.sub(r"\{\{\s*Content\s*\}\}", content, template)
-    template = re.sub(r'href="/', f'href="{basepath}/', template)
-    template = re.sub(r'src="/', f'src="{basepath}/', template)
+    template = re.sub(r'\{\s*href="/*\}', f'href="{basepath}/', template)
+    template = re.sub(r'\{\s*src="/*\}', f'src="{basepath}/', template)
     
     with open(dest_path, 'w') as f:
         f.write(template)
