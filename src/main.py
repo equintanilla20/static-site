@@ -21,16 +21,22 @@ def extract_title(markdown):
 
 
 def generate_page(basepath, from_path, template_path, dest_path):
+    href_pattern = r'href\s*=\s*["\']?\/*'
+    href_replacement = f'href="{basepath}'
+    src_pattern = r'src\s*=\s*["\']?\/*'
+    src_replacement = f'src="{basepath}'
     with open(from_path, 'r') as f:
         markdown = f.read()
     title = extract_title(markdown)
     content = markdown_to_html_node(markdown).to_html()
     with open(template_path, 'r') as f:
         template = f.read()
+    print(f'\ntemplate1 ::: {template}')
     template = re.sub(r"\{\{\s*Title\s*\}\}", title, template)
     template = re.sub(r"\{\{\s*Content\s*\}\}", content, template)
-    template = re.sub(r'\{\s*href="/*\}', f'href="{basepath}/', template)
-    template = re.sub(r'\{\s*src="/*\}', f'src="{basepath}/', template)
+    template = re.sub(href_pattern, href_replacement, template)
+    template = re.sub(src_pattern, src_replacement, template)
+    print(f'\ntemplate2: {template}')
     
     with open(dest_path, 'w') as f:
         f.write(template)
@@ -54,9 +60,11 @@ def main():
     if len(sys.argv) > 1:
         basepath = sys.argv[1]
     else:
-        basepath = ''
+        basepath = '/'
+    print(f'Using basepath: {basepath}')
     copy_static_to_dir(dir)
     generate_page_recursive(basepath, f'content/', f'template.html', f'{dir}/')
 
 
-main()
+if __name__ == '__main__':
+    main()
