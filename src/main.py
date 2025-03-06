@@ -4,12 +4,12 @@ from textnode import *
 from helper import *
 
 
-def copy_static_to_public():
-    print("copying static files to public folder")
-    if not os.path.exists('docs'):
-        os.mkdir('docs')
-    os.system("rm -rf docs/*")
-    os.system("cp -r static/* docs")
+def copy_static_to_dir(dir):
+    print(f"copying static files to {dir} folder")
+    if not os.path.exists(f'{dir}'):
+        os.mkdir(f'{dir}')
+    os.system(f"rm -rf {dir}/*")
+    os.system(f"cp -r static/* {dir}")
     
 
 def extract_title(markdown):
@@ -49,12 +49,14 @@ def generate_page_recursive(basepath, dir_path_content, template_path, dest_dir_
 
 
 def main():
+    # dir = 'public'
+    dir = 'docs'
     if len(sys.argv) > 1:
         basepath = sys.argv[1]
     else:
         basepath = ''
-    copy_static_to_public()
-    generate_page_recursive(basepath, 'content/', 'template.html', 'docs/')
+    copy_static_to_dir(dir)
+    generate_page_recursive(basepath, f'content/', f'template.html', f'{dir}/')
 
 
 main()

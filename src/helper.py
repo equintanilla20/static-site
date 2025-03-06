@@ -20,7 +20,8 @@ def text_to_textnodes(text):
             split_nodes_link(
                 split_nodes_delimiter(
                     split_nodes_delimiter(
-                        split_nodes_delimiter([TextNode(text, TextType.TEXT)], '`', TextType.TEXT), '**', TextType.TEXT), '*', TextType.TEXT))))
+                        split_nodes_delimiter(
+                            split_nodes_delimiter([TextNode(text, TextType.TEXT)], '`', TextType.TEXT), '**', TextType.TEXT), '*', TextType.TEXT), '_', TextType.TEXT))))
 
 
 def split_nodes_delimiter(old_nodes, delimiter, text_type):
@@ -29,6 +30,7 @@ def split_nodes_delimiter(old_nodes, delimiter, text_type):
         '`': TextType.CODE,
         '**': TextType.BOLD,
         '*': TextType.ITALIC,
+        '_': TextType.ITALIC
     }
     for node in old_nodes:
         if delimiter in node.text:
@@ -135,7 +137,9 @@ def markdown_to_html_node(markdown):
                     count += 1
                 else:
                     break
-            html_nodes.append(LeafNode(f'h{count}', block[(count + 1):]))
+            sub_nodes = text_to_textnodes(block[(count + 1):])
+            sub_nodes_2 = [node.text_node_to_html_node() for node in sub_nodes]
+            html_nodes.append(ParentNode(f'h{count}', sub_nodes_2))
         elif block_type == BlockType.CODE:
             child = LeafNode('code', block[4:-3])
             html_nodes.append(ParentNode('pre', [child]))
@@ -154,11 +158,8 @@ def markdown_to_html_node(markdown):
             children_nodes = []
             for item in items:
                 textnodes = text_to_textnodes(item[2:])
-                if len(textnodes) == 1:
-                    children_nodes.append(LeafNode('li', item[2:]))
-                else:
-                    htmlnodes = [node.text_node_to_html_node() for node in textnodes]
-                    children_nodes.append(ParentNode('li', htmlnodes))
+                htmlnodes = [node.text_node_to_html_node() for node in textnodes]
+                children_nodes.append(ParentNode('li', htmlnodes))
             html_node = ParentNode('ul', children_nodes)
             html_nodes.append(html_node)
         elif block_type == BlockType.ORDERED_LIST:
@@ -166,11 +167,8 @@ def markdown_to_html_node(markdown):
             children_nodes = []
             for item in items:
                 textnodes = text_to_textnodes(item[2:])
-                if len(textnodes) == 1:
-                    children_nodes.append(LeafNode('li', item[3:]))
-                else:
-                    htmlnodes = [node.text_node_to_html_node() for node in textnodes]
-                    children_nodes.append(ParentNode('li', htmlnodes))
+                htmlnodes = [node.text_node_to_html_node() for node in textnodes]
+                children_nodes.append(ParentNode('li', htmlnodes))
             html_node = ParentNode('ol', children=children_nodes)
             html_nodes.append(html_node)
         else:
@@ -184,7 +182,7 @@ def markdown_to_html_node(markdown):
 
 
 if __name__ == '__main__':
-    with open('content/majesty/index.md', 'r') as f:
+    with open('content/test.md', 'r') as f:
         markdown = f.read()
     print('------------------------------------')
     html_node = markdown_to_html_node(markdown)
