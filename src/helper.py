@@ -157,7 +157,7 @@ def markdown_to_html_node(markdown):
             items = block.split('\n')
             children_nodes = []
             for item in items:
-                textnodes = text_to_textnodes(item[3:])
+                textnodes = text_to_textnodes(item[2:])
                 htmlnodes = [node.text_node_to_html_node() for node in textnodes]
                 children_nodes.append(ParentNode('li', htmlnodes))
             html_node = ParentNode('ul', children_nodes)
